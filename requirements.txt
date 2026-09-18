@@ -1,0 +1,24 @@
+# Core CV / model
+opencv-python-headless>=4.9,<5
+numpy>=1.26,<2.3
+ultralytics>=8.2,<9
+
+# Zone config
+PyYAML>=6.0,<7
+
+# Data validation
+pydantic>=2.6,<3
+
+# Messaging
+paho-mqtt>=1.6,<2
+requests>=2.31,<3
+
+# Dashboard
+fastapi>=0.110,<1
+uvicorn[standard]>=0.29,<1
+websockets>=12.0,<13
+
+# Dev / test / lint
+pytest>=8.0,<9
+httpx>=0.27,<1
+ruff>=0.4,<1
