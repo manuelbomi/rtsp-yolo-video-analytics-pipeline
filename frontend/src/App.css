@@ -1,0 +1,250 @@
+:root {
+  --bg: #0f1116;
+  --panel: #161923;
+  --border: #262b38;
+  --text: #e6e8ee;
+  --muted: #8b93a7;
+  --accent: #4da3ff;
+  --danger: #ff5d6c;
+  --warn: #ffb454;
+  --ok: #3ddc97;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.dashboard {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-header {
+  padding: 20px 28px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.dashboard-header h1 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.status-badge {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.status-connected {
+  color: var(--ok);
+  border-color: rgba(61, 220, 151, 0.3);
+}
+
+.status-connecting {
+  color: var(--muted);
+}
+
+.status-disconnected {
+  color: var(--danger);
+  border-color: rgba(255, 93, 108, 0.3);
+}
+
+.dashboard-main {
+  flex: 1;
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 24px 28px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.summary-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+}
+
+.summary-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 18px;
+}
+
+.summary-card.total .summary-value {
+  color: var(--accent);
+}
+
+.summary-value {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.summary-label {
+  font-size: 12px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 4px;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 22px;
+}
+
+.panel h2 {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.panel-subtitle {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: var(--muted);
+  max-width: 760px;
+}
+
+.panel-subtitle code {
+  color: var(--text);
+}
+
+.detections-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.detection-frame {
+  margin: 0;
+  background: #0d0f14;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.detection-frame img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.detection-frame figcaption {
+  padding: 8px 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead th {
+  text-align: left;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+tbody td {
+  padding: 10px 14px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+tbody tr:hover td {
+  background: rgba(77, 163, 255, 0.06);
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.badge-restricted_zone_entry {
+  background: rgba(255, 93, 108, 0.15);
+  color: var(--danger);
+}
+
+.badge-line_crossing {
+  background: rgba(77, 163, 255, 0.15);
+  color: var(--accent);
+}
+
+.badge-dwell_time_exceeded {
+  background: rgba(255, 180, 84, 0.15);
+  color: var(--warn);
+}
+
+.empty-state {
+  color: var(--muted);
+  padding: 32px;
+  text-align: center;
+  font-size: 13px;
+}
+
+.dashboard-footer {
+  padding: 14px 28px;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+.dashboard-footer code {
+  color: var(--text);
+}
+
+@media (max-width: 600px) {
+  .dashboard-header,
+  .dashboard-main {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}

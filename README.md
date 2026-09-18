@@ -217,19 +217,94 @@ python scripts/generate_demo_video.py --output demo-media/demo.mp4
 docker compose up --build
 ```
 
-This starts three containers:
+This starts four containers:
 
 - `mosquitto` — the MQTT broker (port 1883), configured for local/dev use
   via `config/mosquitto.conf`.
 - `analytics` — the pipeline, reading `demo-media/demo.mp4` (mounted in)
   and publishing events to `mosquitto`.
 - `dashboard` — the FastAPI app, subscribed to the same broker, serving
-  the live UI at [http://localhost:8000](http://localhost:8000).
+  the original plain-HTML live UI at
+  [http://localhost:8000](http://localhost:8000).
+- `dashboard-ui` — the React + TypeScript dashboard (see
+  [Dashboard](#dashboard) below), served at
+  [http://localhost:5173](http://localhost:5173), reverse-proxying its API/WS
+  calls to `dashboard`.
 
 To point the analytics service at a real camera instead of the demo
 video, edit `camera.source` in `config/pipeline.yaml` to an RTSP URL (see
 the comments in that file for common vendor path conventions), then
 rebuild/restart the `analytics` service.
+
+## Dashboard
+
+![Video analytics dashboard](docs/screenshots/dashboard.png)
+
+A React + TypeScript single-page dashboard (`frontend/`, built with Vite +
+React 18 + TypeScript) that shows the pipeline's real output: a live event
+table (camera, event type, track ID, confidence, timestamp) populated from
+`GET /events` on load and kept current over the existing `WS /ws/live`
+WebSocket, a summary strip with total/per-event-type counts, a
+[Recharts](https://recharts.org/) bar chart of events by type, and a
+"Detections" panel with real annotated frames from an actual YOLOv8 +
+tracker + zone-engine run against the demo video. It's a drop-in upgrade
+next to the original `src/dashboard/static/index.html` UI — both read from
+the same backend, nothing on the FastAPI side changed.
+
+|                                                                    |                                                                    |                                                                    |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------ | ------------------------------------------------------------------ |
+| ![Detection frame 1](docs/screenshots/detection-frame-1.png)      | ![Detection frame 2](docs/screenshots/detection-frame-2.png)      | ![Detection frame 3](docs/screenshots/detection-frame-3.png)      |
+
+The three frames above are real output of
+`python scripts/generate_annotated_frames.py`: bounding boxes, tracker IDs,
+and the restricted-zone/tripwire overlays (proportionally scaled from
+`config/pipeline.yaml`) are drawn with OpenCV directly from this repo's
+own `YoloV8Detector` / `CentroidIoUTracker` / `ZoneRuleEngine` classes —
+the same ones `src/analytics/pipeline.py` runs in production. Note: the
+script first tries the actual demo video, but (as documented in its
+docstring) a COCO-pretrained detector can't recognize
+`generate_demo_video.py`'s flat, untextured placeholder rectangles as
+real objects, so it falls back to running that same real
+detector/tracker/zone-engine chain on the two photographs bundled with the
+`ultralytics` package itself (`bus.jpg` / `zidane.jpg` — Ultralytics' own
+public demo images, not customer data) to get genuine, high-confidence
+detections to display. Either way, nothing here is hand-drawn — it's real
+model inference. The dashboard screenshot above was captured with
+`python scripts/capture_dashboard_screenshot.py`, which stands up a real
+mosquitto broker + the FastAPI dashboard + a real pipeline run against the
+demo video (exercising ingest/tracking/zone-rule logic end-to-end even
+though, per the above, no violation events are expected from the
+placeholder video itself), builds the frontend, and drives headless
+Chromium (Playwright) to screenshot the actually-rendered page once the
+event table and detection images have loaded.
+
+### Running it locally
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+This starts the Vite dev server on
+[http://localhost:5173](http://localhost:5173). During development the
+frontend calls the backend with relative paths (`fetch("/events")`,
+`new WebSocket(".../ws/live")`); `frontend/vite.config.ts` proxies those to
+`http://localhost:8000`, so run the FastAPI dashboard separately first (see
+"Setup & run" above: `uvicorn src.dashboard.api:app --reload --port 8000`).
+No CORS configuration or hardcoded backend URL is needed either in dev (the
+Vite proxy) or in the Docker Compose deployment (`frontend/nginx.conf`
+reverse-proxies the same relative paths to the `dashboard` service) — see
+`frontend/vite.config.ts` and `frontend/nginx.conf` for exactly how each
+environment wires it up.
+
+To type-check and build the production bundle:
+
+```bash
+cd frontend
+npx tsc --noEmit
+npm run build      # outputs frontend/dist/
+```
 
 ## Project structure
 
@@ -249,16 +324,26 @@ rtsp-yolo-video-analytics-pipeline/
 │   │   └── pipeline.py        # wires it all together, config-driven, CLI entrypoint
 │   └── dashboard/
 │       ├── api.py             # FastAPI: /health, /events, WS /ws/live
-│       └── static/index.html  # live event table (vanilla JS)
+│       └── static/index.html  # original plain-HTML/JS live event table
+├── frontend/                  # React + TypeScript dashboard (see "Dashboard" below)
+│   ├── src/
+│   │   ├── App.tsx            # live event table, summary strip, chart, detections panel
+│   │   ├── types.ts           # TS interfaces mirroring schemas.py's VisionEvent
+│   │   └── App.css
+│   ├── nginx.conf             # reverse-proxies /events, /health, /ws/ in the prod image
+│   └── Dockerfile             # multi-stage: node:20-alpine build -> nginx:alpine serve
 ├── scripts/
-│   └── generate_demo_video.py # synthetic demo video generator (no real footage needed)
+│   ├── generate_demo_video.py          # synthetic demo video generator (no real footage needed)
+│   ├── generate_annotated_frames.py    # real YOLOv8+tracker+zone-engine run -> annotated PNGs
+│   └── capture_dashboard_screenshot.py # runs the real stack + Playwright -> dashboard.png
+├── docs/screenshots/           # generated annotated frames + dashboard screenshot (checked in)
 ├── tests/
 │   ├── test_tracker.py
 │   ├── test_zones.py
 │   ├── test_schemas.py
 │   ├── test_publisher.py
 │   └── test_api.py
-├── .github/workflows/ci.yml    # ruff + pytest on push/PR
+├── .github/workflows/ci.yml    # ruff + pytest (Python) and tsc + vite build (frontend) on push/PR
 ├── docker-compose.yml
 ├── Dockerfile
 ├── requirements.txt
