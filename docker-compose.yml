@@ -40,3 +40,16 @@ services:
       - "8000:8000"
     command: ["uvicorn", "src.dashboard.api:app", "--host", "0.0.0.0", "--port", "8000"]
     restart: unless-stopped
+
+  # React + TypeScript dashboard UI (frontend/). Multi-stage build: Vite
+  # compiles the static bundle, nginx serves it and reverse-proxies
+  # /events, /health, and /ws/ to `dashboard` (see frontend/nginx.conf) so
+  # the browser only ever talks to one origin. Served on 5173 so it never
+  # collides with the existing plain-HTML dashboard on 8000.
+  dashboard-ui:
+    build: ./frontend
+    depends_on:
+      - dashboard
+    ports:
+      - "5173:80"
+    restart: unless-stopped
