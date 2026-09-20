@@ -432,9 +432,9 @@ would need on top of this:
 
 ## Demo
 
-![demo](PASTE_GOOGLE_DRIVE_OR_HOSTED_LINK_HERE)
+![demo](https://drive.google.com/file/d/19oNDekN3CfqX09jnnz90UuLKPz4V2oQI/view?usp=sharing)
 
-Demo video is hosted externally — replace the placeholder link above with your hosted video URL.
+Please see some results on the projects's Google Drive here: https://drive.google.com/file/d/19oNDekN3CfqX09jnnz90UuLKPz4V2oQI/view?usp=sharing
 
 ## License
 
